@@ -1,12 +1,38 @@
 [package]
-name = "vela_engine"
+name = "roscel_cbe"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+pollster = "1.0.1"
 taffy = "0.10.1"
-wgpu = "29.0.3"
+wgpu = { version = "29.0.3", default-features = false, features = ["std", "vulkan", "gles", "wgsl"] }
+clap = { version = "4.5", features = ["derive"] }
+tokio = { version = "1.43", features = ["full"] }
+tokio-tungstenite = "0.26"
+futures-util = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+notify = "8.0"
+anyhow = "1.0"
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
 winit = "0.30.13"
 
 [lib]
-create-type = ["cdylib"]
+crate-type = ["cdylib", "staticlib"]
+
+[[bin]]
+name = "roscel"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "z"        # Optimizar para tamaño mínimo
+lto = "thin"           # Link-Time Optimization rápido
+codegen-units = 1      # Elimina duplicados de código muerto
+panic = "abort"        # Elimina tablas de unwinding (más ligero y rápido)
+strip = true           # Quita símbolos de depuración del .so automáticamente
+
+[profile.dev]
+opt-level = 0
+debug = 1              # Símbolos ligeros para máxima velocidad en desarrollo
